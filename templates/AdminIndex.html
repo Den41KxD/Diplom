@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div>
+        {% for obj in page_obj %}
+            {% if obj.status == 'Active' %}
+            <div>
+                  <h4> {{ obj.title }}     </h4>
+                <h5>Importance:  {{ obj.importance }}
+                    Status: {{ obj.status }}</h5>
+
+            <h6> {{ obj.text}} </h6>
+            <h6>Comment:</h6>
+
+            {% for i in comment %}
+                {% if i.application_id == obj.id%}
+
+                <h5>{{ i.text }}</h5>
+                {% endif %}
+                {% endfor %}
+                <a class="btn btn-primary"  href="{% url 'comment' obj.pk %}">Comment</a>
+
+
+
+            <form method="post" action="{% url 'confirm' obj.pk %}">
+                    {% csrf_token %}
+                    <input class="btn btn-success" type="submit" value="Confirm">
+                            </form>
+
+            <form method="post" action="{% url 'reject' obj.pk %}">
+                    {% csrf_token %}
+                    <input class="btn btn-danger" type="submit" value="Reject">
+                            </form>
+
+            </div>
+
+        {% endif %}
+        {% endfor %}
+
+    <h1>On Recovery</h1>
+    {% for obj in page_obj %}
+            {% if obj.status == 'Review' %}
+            <div>
+                  <h4> {{ obj.title }}     </h4>
+                <h5>Importance:  {{ obj.importance }}
+                    Status: {{ obj.status }}</h5>
+
+            <h6> {{ obj.text}} </h6>
+            <h6>Comment:</h6>
+
+            {% for i in comment %}
+                {% if i.application_id == obj.id%}
+                <h5>{{ i.text }}</h5>
+                {% endif %}
+                {% endfor %}
+
+            <form method="post" action="{% url 'confirm' obj.pk %}">
+                    {% csrf_token %}
+                    <input class="btn btn-success" type="submit" value="Confirm">
+                            </form>
+
+            <form method="post" action="{% url 'delete' obj.pk %}">
+                    {% csrf_token %}
+                    <input class="btn btn-danger" type="submit" value="Reject">
+                            </form>
+
+            </div>
+
+        {% endif %}
+        {% endfor %}
+        <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <h6 class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </h6>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+        </div>
+    </div>
+{% endblock %}

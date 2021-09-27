@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h6>If You have account, You can   <a class="btn btn-primary" href="{% url 'login' %}">Login</a></h6>
+
+
+<form method="post">
+    {% csrf_token %}
+    <h5>{{ form }}</h5>
+    <input class="btn btn-primary" type="submit" value="Registration">
+</form>
+{% endblock %}

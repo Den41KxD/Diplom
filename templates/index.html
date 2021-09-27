@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div>
+        {% for obj in page_obj %}
+            {% if obj.author == request.user and obj.status != 'Review' %}
+
+
+                  <h4 > {{ obj.title }}</h4>
+                <h5>Importance:  {{ obj.importance }}
+                    Status: {{ obj.status }}</h5>
+Text:
+            <h6> {{ obj.text}} </h6>
+            <h6>Comment:</h6>
+
+            {% for i in comment %}
+                {% if i.application_id == obj.id%}
+                    {% if i.last_comment %}
+                        <h4 class="alert-danger">{{ i.text }}</h4>
+                        {% else %}
+                        <h5>{{ i.text }}</h5>
+                        {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% if obj.status == 'Active'%}
+
+                <a class="btn btn-primary"  href="{% url 'comment' obj.pk %}">Comment</a>
+                <a class="btn btn-primary"  href="{% url 'update' obj.pk %}">Update</a>
+
+                    {% endif %}
+            {% if obj.status == 'NotActive/Reject' %}
+                <form method="post" action="{% url 'review' obj.pk %}">
+                    {% csrf_token %}
+                    <input class="btn btn-danger" type="submit" value="Review">
+                            </form>
+
+                {% endif %}
+
+
+
+            </div>
+
+            {% endif %}
+
+        {% endfor %}
+        <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <h6 class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </h6>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+        </div>
+    </div>
+{% endblock %}
