@@ -59,12 +59,12 @@ class AppViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
-    def confirm(self,request,*args,**kwargs):
+    def confirm(self, request, *args, **kwargs):
         if not request.user.is_superuser:
             raise exceptions.ValidationError('You are not Admin!!')
         confirm_obj = self.get_object()
         if confirm_obj.status in ['Active','Review']:
-            confirm_obj.status='NotActive/Confirm'
+            confirm_obj.status = 'NotActive/Confirm'
             confirm_obj.save()
             serializer = self.get_serializer(confirm_obj)
             return Response(serializer.data)
@@ -72,7 +72,7 @@ class AppViewSet(ModelViewSet):
             raise exceptions.ValidationError('Can\'t confirm inactive application')
 
     @action(detail=True, methods=['post'])
-    def reject(self,*args,**kwargs):
+    def reject(self, *args, **kwargs):
         reject_obj = self.get_object()
         if not self.request.user.is_superuser:
             raise exceptions.ValidationError('You are not Admin!!')

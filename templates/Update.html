@@ -4,8 +4,11 @@
 
 <form method="post">
     {% csrf_token %}
-    {{ Application.as_p}}
+    {{ Application.text}}
+    {{ Application.importance}}
+
 
     <input type="submit" value="Update">
 </form>
+
 {% endblock %}

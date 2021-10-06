@@ -138,4 +138,4 @@ REST_FRAMEWORK = {
     ],
 }
 
-TOKEN_TTL = 60*60
+TOKEN_TTL = 60

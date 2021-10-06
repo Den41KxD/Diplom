@@ -4,15 +4,24 @@
 
     <div>
         {% for obj in page_obj %}
+            <div class="col-lg-4">
             {% if obj.author == request.user and obj.status != 'Review' %}
-
-
-                  <h4 > {{ obj.title }}</h4>
-                <h5>Importance:  {{ obj.importance }}
-                    Status: {{ obj.status }}</h5>
-Text:
+                <h4 style="background: greenyellow"> Title: {{ obj.title }}</h4>
+                {% if obj.importance == 'High' %}
+                    <h5 style="background: red">Importance:  {{ obj.importance }}</h5>
+                    {% elif obj.importance == 'Medium' %}
+                    <h5 style="background: yellow">Importance:  {{ obj.importance }}</h5>
+                    {% else %}
+                     <h5 style="background: green">Importance:  {{ obj.importance }}</h5>
+                {% endif %}
+                {% if obj.status == 'Active' or obj.status == 'NotActive/Confirm' %}
+                     <h5 style="background: green">Status: {{ obj.status }}</h5>
+                    {% else %}
+                     <h5 style="background: crimson">Status: {{ obj.status }}</h5>
+                    {% endif %}
+            <h5 style="background: yellow">description:</h5>
             <h6> {{ obj.text}} </h6>
-            <h6>Comment:</h6>
+            <h6 style="background: violet">Comment:</h6>
 
             {% for i in comment %}
                 {% if i.application_id == obj.id%}
@@ -36,9 +45,7 @@ Text:
                             </form>
 
                 {% endif %}
-
-
-
+</div>
             </div>
 
             {% endif %}

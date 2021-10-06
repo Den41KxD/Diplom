@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import ImproperlyConfigured
+from django.db.models import QuerySet
 from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from helpdesk.forms import UserCreation, WishCreated, CommentCreated, WishUpdateForm
@@ -34,7 +35,6 @@ class AppView(ListView):
     ordering = ['-id']
 
     def get(self, request, *args, **kwargs):
-        self.extra_context = {'comment': Comment.objects.all()}
         if not request.user.is_superuser:
             self.template_name = 'index.html'
             return super(AppView, self).get(request)
@@ -42,6 +42,28 @@ class AppView(ListView):
         else:
             self.template_name = 'AdminIndex.html'
             return super(AppView, self).get(request)
+
+    def paginate_queryset(self, queryset, page_size):
+        return_paginate_queryset=super(AppView, self).paginate_queryset(queryset, page_size)
+        app_id = []
+        for i in return_paginate_queryset[2]:
+            print(i.id)
+            app_id.append(i.id)
+        self.extra_context = {'comment': Comment.objects.filter(application_id__in=app_id)}
+        print(self.extra_context)
+        return return_paginate_queryset
+
+    def get_queryset(self):
+        if not self.request.user.is_superuser:
+            queryset = self.model.objects.filter(
+                status__in=['NotActive/Confirm', 'NotActive/Reject', 'Active']).filter(author_id=self.request.user.id)
+        else:
+            queryset = self.model.objects.filter(
+                status__in=['Review', 'Active'])
+        print(queryset)
+        ordering = self.get_ordering()
+        queryset = queryset.order_by(*ordering)
+        return queryset
 
 
 class AppCreated(LoginRequiredMixin, CreateView):
@@ -76,32 +98,21 @@ class AppUpdateView(LoginRequiredMixin, UpdateView):
     model = WishList
     fields = ['text', 'importance']
     template_name = 'Update.html'
-    extra_context = {'Application': WishUpdateForm()}
+    extra_context = {'Application': WishUpdateForm(),
+                     'start':'fsdkjlfkjls'}
     success_url = '/'
 
 
-# class Confirm(DeleteView):
-#     model = WishList
-#     success_url = '/'
-#
-#     def delete(self, request, *args, **kwargs):
-#         self.object = self.get_object()
-#         success_url = self.get_success_url()
-#         self.object.status='NotActive/Confirm'
-#         self.object.save()
-#         return HttpResponseRedirect(success_url)
+class Confirm(LoginRequiredMixin, DeleteView):
+    model = WishList
+    success_url = '/'
 
-@action(detail=True, methods=['post'])
-def confirm(request, *args, **kwargs):
-    if not request.user.is_superuser:
-        raise Exception('You are not Admin!!')
-    confirm_obj = WishList.objects.get(pk=kwargs.get('pk'))
-    if confirm_obj.status in ['Active', 'Review']:
-        confirm_obj.status = 'NotActive/Confirm'
-        confirm_obj.save()
-        return HttpResponseRedirect('/')
-    else:
-        raise Exception('Can\'t confirm inactive Wish')
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.status='NotActive/Confirm'
+        self.object.save()
+        return HttpResponseRedirect(success_url)
 
 
 class Reject(CreateView):
@@ -122,29 +133,17 @@ class Reject(CreateView):
         return super().form_valid(form=form)
 
 
-# class Review(LoginRequiredMixin,DeleteView):
-#     model = WishList
-#     success_url = '/'
-#     def delete(self, request, *args, **kwargs):
-#         self.object = self.get_object()
-#         print(self.object)
-#         success_url = self.get_success_url()
-#         self.object.status='Review'
-#         self.object.save()
-#         return HttpResponseRedirect(success_url)
+class Review(LoginRequiredMixin,DeleteView):
+    model = WishList
+    success_url = '/'
 
-
-@action(detail=True, methods=['post'])
-def review(request, *args, **kwargs):
-    if request.user.is_superuser:
-        raise Exception('You are Admin!!')
-    review_obj = WishList.objects.get(pk=kwargs.get('pk'))
-    if review_obj.status in ['NotActive/Reject', ]:
-        review_obj.status = 'Review'
-        review_obj.save()
-        return HttpResponseRedirect('/')
-    else:
-        raise Exception('Can\'t review This Wish')
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        print(self.object)
+        success_url = self.get_success_url()
+        self.object.status='Review'
+        self.object.save()
+        return HttpResponseRedirect(success_url)
 
 
 class DeleteApp(DeleteView):
